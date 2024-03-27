@@ -2,15 +2,13 @@
 import {
     View, Text, Platform, TextInput, Button, SafeAreaView, FlatList, StyleSheet, Image
 } from 'react-native';
-import AddButton from "../components/AddButton";
 
-const Home = ({ navigation }) => {
+const Add = ({ navigation }) => {
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>Home Screen</Text>
-            <AddButton navigation={navigation} />
+            <Text>Add Screen</Text>
         </View>
     );
 };
 
-export default Home;
+export default Add;

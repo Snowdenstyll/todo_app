@@ -1,9 +1,9 @@
 
 import * as SQLite from 'expo-sqlite';
 
-const DATABASE_NAME = "todo";
+const DATABASE_NAME = "todo_v1";
 const TABLE_DDL = "CREATE TABLE IF NOT EXISTS task (\
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \
+        id INTEGER PRIMARY KEY NOT NULL, \
         label TEXT NOT NULL, \
         descr TEXT NOT NULL, \
         status_id INTEGER NOT NULL DEFAULT 0 \
@@ -21,17 +21,20 @@ const DROP_TABLE = "DROP TABLE task;";
 
 //const [databaseLog, //setDatabaseLog] = useState('');
 
+function openDatabase() {
+    const db = SQLite.openDatabase("todo_v1");
+    return db;
+}
+
+const db = openDatabase();
+
 const runDatabaseTransaction = async (queryCallback) => {
-    let databaseContext = null;
     try {
-        databaseContext = SQLite.openDatabase("todo.db");
-        await databaseContext.transactionAsync(queryCallback, false);
-        console.log(queryCallback);
-    }
-    catch (ex) {
+        databaseContext = SQLite.openDatabase("todo_v1");
+        response = await databaseContext.transactionAsync(queryCallback, false);
+    } catch (ex) {
         console.log(ex);
-    }
-    finally {
+    } finally {
         databaseContext?.closeAsync();
     }
 }
@@ -41,20 +44,60 @@ const dropTable = () => {
 }
 
 const createTable = () => {
-    let query = async transaction => {
+    //db = openDatabase();
+
+    db.transaction((tx) => {
+        tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY NOT NULL, label TEXT NOT NULL, descr TEXT NOT NULL, status_id INTEGER DEFAULT 0);`,
+            [],
+            () => console.log("Table created"),
+            (_, result) => console.log(result)
+        );
+    });
+
+    //db.closeSync();
+    /* let query = async transaction => {
         let result = await transaction.executeSqlAsync(TABLE_DDL, []);
         console.log(result);
         //setDatabaseLog("Table created");
     }
 
-    runDatabaseTransaction(query);
+    runDatabaseTransaction(query); */
 }
 
-const populateTable = async () => {
+const populateTable = () => {
+    var db = openDatabase();
 
     //clearTable(); // This soft-locks the app
 
+    let queryArguments = [];
     let insertQuery = "INSERT INTO task (label, descr, status_id) values ";
+
+    EXAMPLE_DATA.forEach(item => {
+        insertQuery += "(?, ?, ?),";
+
+        queryArguments.push(item.label);
+        queryArguments.push(item.descr);
+        queryArguments.push(item.status_id);
+    });
+
+    insertQuery = insertQuery.substring(0, insertQuery.length - 1); // remove trailing comma (,)
+    console.log(insertQuery);
+    console.log(queryArguments);
+
+    db.transaction((tx) => {
+        tx.executeSql(
+            insertQuery,
+            queryArguments,
+            (_, { rowsAffected }) => rowsAffected > 0 ? console.log("Row inserted") : console.log("Row not inserted"),
+            (_, result) => console.log("Error inserting row: " + (result))
+        );
+    });
+
+    db.closeSync();
+
+
+    /* let insertQuery = "INSERT INTO task (label, descr, status_id) values ";
     let queryArguments = [];
 
     EXAMPLE_DATA.forEach(item => {
@@ -70,10 +113,10 @@ const populateTable = async () => {
     let query = async transaction => {
         let result = await transaction.executeSqlAsync(insertQuery, queryArguments);
         console.log(result.rowsAffected);
-        //setDatabaseLog(`${result.rowsAffected} rows added`);
+        console.log(result);
     }
 
-    runDatabaseTransaction(query);
+    runDatabaseTransaction(query); */
 }
 
 const viewTable = () => {
@@ -103,44 +146,62 @@ const viewSortedTable = () => {
 }
 
 const clearTable = () => {
-    let query = async transaction => {
+    db.transaction((tx) => {
+        tx.executeSql(
+            "drop table task;",
+            [],
+            () => console.log("Table dropped"),
+            (_, message) => console.log(message)
+        );
+    });
+    /* let query = async transaction => {
         let result = await transaction.executeSqlAsync(CLEAR_DML, []);
         console.log(result);
         //setDatabaseLog("Table cleared");
     }
 
-    runDatabaseTransaction(query);
+    runDatabaseTransaction(query); */
 }
 
-const getData = async () => {
-    let data = [];
-    try {
-        let result = await new Promise((resolve, reject) => {
-            let query = async transaction => {
-                let result = await transaction.executeSqlAsync(VIEW_DML, []);
-                resolve(result.rows);
-            };
-            runDatabaseTransaction(query);
-        });
+const getData = (callback) => {
+    //db = openDatabase();
 
-        data = Array.from(result);
-        console.log("GETDATA after tx: " + data.length);
-        return data;
-    } catch (error) {
-        console.error("Error in getData:", error);
-        return []; // Return empty array or handle error accordingly
-    }
+    db.transaction(
+        (tx) => {
+            tx.executeSql(
+                "SELECT * FROM task;",
+                [],
+                (_, { rows }) =>
+                callback([JSON.stringify(rows._array)]) //
+                //callback(JSON.stringify(rows._array)) //callback(JSON.stringify(rows))
+            );
+        },
+        (_, error) => {
+            console.error('Failed to get data:', error);
+        }
+    );
+
+    //db.closeSync();
 }
 
+const insertTask = (label, descr, status_id) => {
+    //db = openDatabase();
 
-export { createTable, populateTable, viewTable, viewSortedTable, clearTable, getData, dropTable }
+    db.transaction(
+        (tx) => {
+            tx.executeSql(
+                "INSERT INTO task (label, descr, status_id) values (?, ?, ?);",
+                [label, descr, status_id],
+                (_, { rowsAffected }) => rowsAffected > 0 ? console.log("Row inserted") : console.log("Row not inserted"),
+                (_, result) => console.log("Error insertTask: " + (result))
+            );
+        },
+        (_, error) => {
+            console.error('Failed to insert data:', error);
+        }
+    );
 
-/* return <View style={stylesheets.appView}>
-    <Text style={style.title}>SQLite Demo</Text>
-    <View style={stylesheets.button}><Button title="Create Table" onPress={createTable}></Button></View>
-    <View style={stylesheets.button}><Button title="Populate Table" onPress={populateTable}></Button></View>
-    <View style={stylesheets.button}><Button title="View Table" onPress={viewTable}></Button></View>
-    <View style={stylesheets.button}><Button title="View Table (Sorted)" onPress={viewSortedTable}></Button></View>
-    <View style={stylesheets.button}><Button title="Clear Table" onPress={clearTable}></Button></View>
-    <View style={stylesheets.frame}><Text style={stylesheets.text}>{databaseLog}</Text></View>
-    </View>; */
+    //db.closeSync();
+}
+
+export { createTable, populateTable, viewTable, viewSortedTable, clearTable, getData, dropTable, insertTask }

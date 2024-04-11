@@ -5,25 +5,40 @@ import {
 } from 'react-native';
 import AddButton from "../components/AddButton";
 import { getData, createTable, populateTable, viewTable, viewSortedTable, clearTable, getDatabaseLog, dropTable} from "../database/database";
+import stylesheet from '../stylesheet';
 
-const TaskList = () => {
+const TaskList = (data) => {
     const [task, setTasks] = useState([]);
 
     useEffect(() => {
-        /* createTable(); // Create the table
-        populateTable(); // Insert initial data
-        getData(setTasks); */ // View the table
-    }, []);
+        setTasks(data);
+     }, [])
 
-   /*  const Item = ({title}) => (
-        <View style={styles.item}>
-          <Text style={styles.title}>{title}</Text>
+    /* useEffect(() => {
+        getData((data) => {
+            if (data) {
+                setTasks(data); // Update state with fetched data
+                console.log(task.length);
+            } else {
+                console.log('No data');
+            }
+        });
+    }, []); */
+
+    const Item = ({item}) => (
+        <View>
+            <Text style={stylesheet.label}>{item['label']} {item['descr']}</Text>
         </View>
-      ); */
+    );
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Text>{task.length}</Text>
+            <Text>wtf {task.length}</Text>
+            <FlatList
+                data={task}
+                renderItem={({item}) => <Item item={item} />}
+                keyExtractor={(temp, index) => (index)}
+            />
         </View>
     );
 };

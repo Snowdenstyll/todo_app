@@ -5,13 +5,14 @@ import {
 import React, { useState } from 'react';
 import stylesheet from '../stylesheet';
 import { Dropdown } from 'react-native-element-dropdown';
+import { insertTask } from '../database/database';
 
-const Add = ({ navigation }) => {
-    const [title, setTitle] = useState('');
+const Add = () => {
+    const [label, setLabel] = useState('');
     const [description, setDescription] = useState('');
 
-    const handleTitleChange = (text) => {
-        setTitle(text);
+    const handleLabelChange = (text) => {
+        setLabel(text);
     };
 
     const handleDescriptionChange = (text) => {
@@ -19,8 +20,9 @@ const Add = ({ navigation }) => {
     };
 
     const handleSubmit = () => {
-        // Use title and description for further processing
-        console.log('Title:', title);
+        insertTask(label, description, value );
+        // Use label and description for further processing
+        console.log('Label:', label);
         console.log('Description:', description);
     };
 
@@ -37,14 +39,14 @@ const Add = ({ navigation }) => {
 
     return (
         <View style={stylesheet.flexView}>
-            <Text style={stylesheet.baseText}>Title</Text>
+            <Text style={stylesheet.baseText}>Label</Text>
             <TextInput
                 style={stylesheet.input}
                 keyboardType='default'
-                placeholder='Enter Title Here'
-                title='Title'
-                value={title}
-                onChangeText={handleTitleChange}
+                placeholder='Enter Label Here'
+                title='Label'
+                value={label}
+                onChangeText={handleLabelChange}
             />
             <Text style={stylesheet.baseText}>Description</Text>
             <TextInput

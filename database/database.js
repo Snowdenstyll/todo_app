@@ -172,7 +172,7 @@ const getData = (callback) => {
                 "SELECT * FROM task;",
                 [],
                 (_, { rows }) =>
-                callback([JSON.stringify(rows._array)]) //
+                callback(JSON.stringify(rows._array)) //
                 //callback(JSON.stringify(rows._array)) //callback(JSON.stringify(rows))
             );
         },

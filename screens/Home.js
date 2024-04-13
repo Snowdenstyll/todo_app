@@ -11,17 +11,30 @@ import { getData, createTable, populateTable, viewTable, viewSortedTable, clearT
 const Home = ({ navigation }) => {
   const [tasks, setTasks] = useState([]);
 
-  async function loadData() {
-    var data = getData();
-    console.log(JSON.parse(data));
-    //setTasks(response);
-  }
+  const handleViewTable = async () => {
+    let taskArray = [];
+    try {
+      response = await viewTable();
+      response.forEach(element => {
+        console.log(element);
+        taskArray.push(element);
+        //taskArray.push({'label': element.label, 'description': element.descr, 'status_id': element.status_id });
+      });
+      setTasks(taskArray);
+    } catch (ex) {
+        console.log(ex);
+    }
+    console.log(taskArray);
+}
 
-  useEffect(() => {
+
+  /* useEffect(() => {
     createTable,
     populateTable,
     loadData();
-  }, []);
+  }, []); */
+
+
 
   //loadData();
   /* useEffect(() => {
@@ -42,10 +55,16 @@ const Home = ({ navigation }) => {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Home Screen {tasks}</Text>
+        <View>
+          {tasks.map((task, index) => {
+            <Text>{index}</Text>
+          })}
+      </View>
       <AddButton navigation={navigation} />
       <View style={stylesheet.button}><Button title="Create Table" onPress={createTable}></Button></View>
       <View style={stylesheet.button}><Button title="Populate Table" onPress={populateTable}></Button></View>
-      <View style={stylesheet.button}><Button title="View Table" onPress={viewTable}></Button></View>
+      <View style={stylesheet.button}><Button title="View Table" onPress={handleViewTable}></Button></View>
+      {/* <View style={stylesheet.button}><Button title="Get DATA" onPress={handleGetData}></Button></View> */}
     </View>
   );
 };

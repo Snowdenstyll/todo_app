@@ -5,7 +5,7 @@ import {
 import React, { useState } from 'react';
 import stylesheet from '../stylesheet';
 import { Dropdown } from 'react-native-element-dropdown';
-import { insertTask } from '../database/database';
+import { getData, insertTask } from '../database/database';
 
 const Add = () => {
     const [label, setLabel] = useState('');
@@ -25,6 +25,12 @@ const Add = () => {
         console.log('Label:', label);
         console.log('Description:', description);
     };
+
+
+    const handleGetData = () => {
+        var _data = getData(data => { console.log(data) });
+        console.log(_data);
+    }
 
     // Dropdown
     const [value, setValue] = useState(null);
@@ -83,6 +89,7 @@ const Add = () => {
                 title="Submit"
                 onPress={handleSubmit}
             />
+                <View style={stylesheet.button}><Button title="Get Data" onPress={handleGetData}></Button></View>
         </View>
     );
 };

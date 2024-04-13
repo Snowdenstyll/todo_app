@@ -1,7 +1,7 @@
 
 import * as SQLite from 'expo-sqlite';
 
-const DATABASE_NAME = "todo_v1";
+const DATABASE_NAME = "todo_v2";
 const TABLE_DDL = "CREATE TABLE IF NOT EXISTS task (\
         id INTEGER PRIMARY KEY NOT NULL, \
         label TEXT NOT NULL, \
@@ -22,7 +22,7 @@ const DROP_TABLE = "DROP TABLE task;";
 //const [databaseLog, //setDatabaseLog] = useState('');
 
 function openDatabase() {
-    const db = SQLite.openDatabase("todo_v1");
+    const db = SQLite.openDatabase("todo_v2");
     return db;
 }
 
@@ -30,20 +30,21 @@ const db = openDatabase();
 
 const runDatabaseTransaction = async (queryCallback) => {
     try {
-        databaseContext = SQLite.openDatabase("todo_v1");
+        databaseContext = SQLite.openDatabase("todo_v2");
         response = await databaseContext.transactionAsync(queryCallback, false);
     } catch (ex) {
         console.log(ex);
     } finally {
         databaseContext?.closeAsync();
     }
+    return response;
 }
 
 const dropTable = () => {
     runDatabaseTransaction(DROP_TABLE);
 }
 
-const createTable = () => {
+/* const createTable = () => {
     //db = openDatabase();
 
     db.transaction((tx) => {
@@ -56,21 +57,30 @@ const createTable = () => {
     });
 
     //db.closeSync();
-    /* let query = async transaction => {
+    let query = async transaction => {
         let result = await transaction.executeSqlAsync(TABLE_DDL, []);
         console.log(result);
         //setDatabaseLog("Table created");
     }
 
-    runDatabaseTransaction(query); */
+    runDatabaseTransaction(query);
+} */
+
+const createTable = () => {
+    let query = async transaction => {
+        let result = await transaction.executeSqlAsync(TABLE_DDL, []);
+        console.log(result);
+    }
+
+    runDatabaseTransaction(query);
 }
 
-const populateTable = () => {
-    var db = openDatabase();
+const populateTable = async (callback) => {
+    //if (db._closed) db = openDatabase();
 
     //clearTable(); // This soft-locks the app
 
-    let queryArguments = [];
+    /* let queryArguments = [];
     let insertQuery = "INSERT INTO task (label, descr, status_id) values ";
 
     EXAMPLE_DATA.forEach(item => {
@@ -92,12 +102,11 @@ const populateTable = () => {
             (_, { rowsAffected }) => rowsAffected > 0 ? console.log("Row inserted") : console.log("Row not inserted"),
             (_, result) => console.log("Error inserting row: " + (result))
         );
-    });
+    }); */
 
-    db.closeSync();
+    console.log("populating table");
 
-
-    /* let insertQuery = "INSERT INTO task (label, descr, status_id) values ";
+    let insertQuery = "INSERT INTO task (label, descr, status_id) values ";
     let queryArguments = [];
 
     EXAMPLE_DATA.forEach(item => {
@@ -111,25 +120,46 @@ const populateTable = () => {
     insertQuery = insertQuery.substring(0, insertQuery.length - 1); // remove trailing comma (,)
 
     let query = async transaction => {
-        let result = await transaction.executeSqlAsync(insertQuery, queryArguments);
-        console.log(result.rowsAffected);
-        console.log(result);
+        try {
+            let result = await transaction.executeSqlAsync(insertQuery, queryArguments);
+            console.log(result.rowsAffected);
+            console.log(result);
+        } catch (error) {
+            console.log(error);
+        }
     }
 
-    runDatabaseTransaction(query); */
+    callback = runDatabaseTransaction(query);
+
+    return callback;
 }
 
-const viewTable = () => {
+const viewTable = async () => {
+    console.log("View Table()");
+    let resultArr = [];
+
     let query = async transaction => {
-        let result = await transaction.executeSqlAsync(VIEW_DML, []);
-        console.log(result);
-        let log = "";
-        result.rows.forEach(item => log += `${item.label}: ${item.descr} : ${item.status_id}\n`);
-        if (!log) log = "No data";
-        //setDatabaseLog(log);
+        try {
+            result = await transaction.executeSqlAsync(VIEW_DML, []);
+            result.rows.forEach(item => {
+                resultArr.push(item); // Push each item into resultArr
+            });
+            //console.log("resultArr: ", resultArr);
+        } catch (error) {
+            console.error('Error executing SQL query:', error);
+        }
     }
 
-    runDatabaseTransaction(query);
+    // Call runDatabaseTransaction and await the result
+    try {
+        await runDatabaseTransaction(query);
+    } catch (error) {
+        console.error('Error running database transaction:', error);
+    }
+
+    return resultArr;
+    //return result;
+    //return callback;
 }
 
 const viewSortedTable = () => {
@@ -165,7 +195,9 @@ const clearTable = () => {
 
 const getData = (callback) => {
     //db = openDatabase();
+    //if (db._closed) db = openDatabase();
 
+    console.log("Calling GetData()");
     db.transaction(
         (tx) => {
             tx.executeSql(
@@ -180,7 +212,7 @@ const getData = (callback) => {
             console.error('Failed to get data:', error);
         }
     );
-
+    return callback;
     //db.closeSync();
 }
 

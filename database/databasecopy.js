@@ -10,8 +10,6 @@
 import { useState } from 'react'
 import { Button, Text, View } from 'react-native';
 
-import style from './stylesheets.js';
-
 import * as SQLite from 'expo-sqlite';
 import stylesheets from './stylesheets.js';
 

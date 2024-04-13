@@ -74,5 +74,19 @@ export default StyleSheet.create({
     },
     label: {
         fontSize: 32,
-    }
+    },
+    container: {
+        backgroundColor: 'gray',
+        maxHeight: 400,
+        overflow: 'scroll',
+    },
+    scrollView : {
+        marginTop: 0,
+    },
+    title: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginTop: 20,
+        marginBottom: 20,
+    },
 });

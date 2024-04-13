@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 
 const AddButton = (props) => {
     return (
-        <View style={{ marginTop: 200 }}>
+        <View style={{ marginTop:10 }}>
             <TouchableOpacity
                 style={{
                     borderWidth: 1,
@@ -19,11 +19,11 @@ const AddButton = (props) => {
                     marginRight:4,
                     float: 'right',
                     backgroundColor: 'red',
-                    borderRadius: 100,
+                    borderRadius: 40,
                 }}
                 onPress={() => { props.navigation.navigate('Add')}}
             >
-                <Text style={{ color: "white" }}>Add</Text>
+                <Text style={{ color: "white", justifyContent: 'center' }}>Add New Task</Text>
             </TouchableOpacity>
         </View>
     );

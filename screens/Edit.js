@@ -5,11 +5,12 @@ import {
 import React, { useState } from 'react';
 import stylesheet from '../stylesheet';
 import { Dropdown } from 'react-native-element-dropdown';
-import { getData, insertTask, viewTable } from '../database/database';
+import { viewTable, updateTask } from '../database/database';
 
-const Add = () => {
-    const [label, setLabel] = useState('');
-    const [description, setDescription] = useState('');
+const Edit = (props) => {
+    var task = props.route.params.task;
+    const [label, setLabel] = useState(task.label);
+    const [description, setDescription] = useState(task.descr);
 
     const handleLabelChange = (text) => {
         setLabel(text);
@@ -19,39 +20,6 @@ const Add = () => {
         setDescription(text);
     };
 
-    const handleSubmit = () => {
-        let missingValues = [];
-        if (label.length === 0) { missingValues.push('Label'); }
-        if (description.length === 0) { missingValues.push('Description'); }
-        if (value === null) { missingValues.push('Status'); }
-        if (missingValues.length === 0) {
-            insertTask(label, description, value);
-            showSuccessAlert();
-        } else {
-            showErrorAlert(JSON.stringify(missingValues).replace(/[\[\]"]+/g, ' '));
-        }
-    };
-
-    //tasks
-    const [tasks, setTasks] = useState(null);
-
-    const handleViewTable = async () => {
-        try {
-            const response = await viewTable();
-            if (Array.isArray(response)) {
-                setTasks(response);
-            } else {
-                console.log("not array");
-            }
-        } catch (ex) {
-            console.log(ex);
-        }
-    }
-
-    // Dropdown
-    const [value, setValue] = useState(null);
-    const [isFocus, setIsFocus] = useState(false);
-
     const data = [
         { label: 'Draft', value: '1' },
         { label: 'Todo', value: '2' },
@@ -59,11 +27,15 @@ const Add = () => {
         { label: 'Done', value: '4' },
     ];
 
+    // Dropdown
+    const [value, setValue] = useState(data[task.status_id - 1].value);
+    const [isFocus, setIsFocus] = useState(false);
+
     //alert
     const showSuccessAlert = () => {
         Alert.alert(
-            'Item Added',
-            'The item has been added successfully!',
+            'Item Updated',
+            'The item has been Updated successfully!',
             [
                 {
                     text: 'OK',
@@ -76,18 +48,32 @@ const Add = () => {
     };
 
     const showErrorAlert = (props) => {
-        Alert.alert(
-            'Error',
-            'Missing input for ' + props + '! Please fill in all fields.',
-            [
-                {
-                    text: 'OK',
-                    onPress: () => console.log('OK Pressed'),
-                    style: 'default',
-                },
-            ],
-            { cancelable: false }
-        );
+            Alert.alert(
+                'Error',
+                'Missing input for ' + props + '! Please fill in all fields.',
+                [
+                    {
+                        text: 'OK',
+                        onPress: () => console.log('OK Pressed'),
+                        style: 'default',
+                    },
+                ],
+                { cancelable: false }
+            );
+    };
+
+    const handleSubmit = () => {
+        let missingValues = [];
+        if (label.length === 0) { missingValues.push('Label'); }
+        if (description.length === 0) { missingValues.push('Description'); }
+        if (value === null) { missingValues.push('Status'); }
+        if (missingValues.length === 0) {
+            let id = task.id;
+            updateTask(id, label, description, value);
+            showSuccessAlert();
+        } else {
+            showErrorAlert(JSON.stringify(missingValues).replace(/[\[\]"]+/g, ' '));
+        }
     };
 
     return (
@@ -141,4 +127,4 @@ const Add = () => {
     );
 };
 
-export default Add;
+export default Edit;

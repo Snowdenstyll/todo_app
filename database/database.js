@@ -44,28 +44,6 @@ const dropTable = () => {
     runDatabaseTransaction(DROP_TABLE);
 }
 
-/* const createTable = () => {
-    //db = openDatabase();
-
-    db.transaction((tx) => {
-        tx.executeSql(
-            `CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY NOT NULL, label TEXT NOT NULL, descr TEXT NOT NULL, status_id INTEGER DEFAULT 0);`,
-            [],
-            () => console.log("Table created"),
-            (_, result) => console.log(result)
-        );
-    });
-
-    //db.closeSync();
-    let query = async transaction => {
-        let result = await transaction.executeSqlAsync(TABLE_DDL, []);
-        console.log(result);
-        //setDatabaseLog("Table created");
-    }
-
-    runDatabaseTransaction(query);
-} */
-
 const createTable = () => {
     let query = async transaction => {
         let result = await transaction.executeSqlAsync(TABLE_DDL, []);
@@ -76,34 +54,6 @@ const createTable = () => {
 }
 
 const populateTable = async (callback) => {
-    //if (db._closed) db = openDatabase();
-
-    //clearTable(); // This soft-locks the app
-
-    /* let queryArguments = [];
-    let insertQuery = "INSERT INTO task (label, descr, status_id) values ";
-
-    EXAMPLE_DATA.forEach(item => {
-        insertQuery += "(?, ?, ?),";
-
-        queryArguments.push(item.label);
-        queryArguments.push(item.descr);
-        queryArguments.push(item.status_id);
-    });
-
-    insertQuery = insertQuery.substring(0, insertQuery.length - 1); // remove trailing comma (,)
-    console.log(insertQuery);
-    console.log(queryArguments);
-
-    db.transaction((tx) => {
-        tx.executeSql(
-            insertQuery,
-            queryArguments,
-            (_, { rowsAffected }) => rowsAffected > 0 ? console.log("Row inserted") : console.log("Row not inserted"),
-            (_, result) => console.log("Error inserting row: " + (result))
-        );
-    }); */
-
     console.log("populating table");
 
     let insertQuery = "INSERT INTO task (label, descr, status_id) values ";
@@ -161,6 +111,35 @@ const viewTable = async () => {
     //return result;
     //return callback;
 }
+
+const updateTask = (id, label, descr, status_id) => {
+    if (id === null) return;
+    let query = [];
+    let params = [];
+    if (label !== null) { query.push("label = ?"); params.push(label); }
+    if (descr !== null) { query.push("descr = ?"); params.push(descr); }
+    if (status_id !== null) { query.push("status_id = ?"); params.push(status_id); }
+
+    let queryStr = "update task set " + query.join(", ");
+    params.push(id);
+    console.log(queryStr);
+    console.log(params);
+
+    db.transaction(
+        (tx) => {
+            tx.executeSql(
+               queryStr + " where id = ?;",
+                params,
+                (_, { rowsAffected }) => rowsAffected > 0 ? console.log("Row Update") : console.log("Row not updated"),
+                (_, result) => console.log("Error UpdateTask: " + (result))
+            );
+        },
+        (_, error) => {
+            console.error('Failed to update data:', error);
+        }
+    );
+}
+
 
 const viewSortedTable = () => {
     let query = async transaction => {
@@ -236,4 +215,4 @@ const insertTask = (label, descr, status_id) => {
     //db.closeSync();
 }
 
-export { createTable, populateTable, viewTable, viewSortedTable, clearTable, getData, dropTable, insertTask }
+export { createTable, populateTable, viewTable, viewSortedTable, clearTable, getData, dropTable, insertTask, updateTask }
